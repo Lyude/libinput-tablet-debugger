@@ -20,6 +20,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake_modules")
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBINPUT REQUIRED libinput)
 find_package(Curses REQUIRED)
+if ( PANEL_LIBRARIES )
+	message(FATAL_ERROR "Panel library for Curses not found")
+endif()
+
 find_package(UDev REQUIRED)
 
 add_definitions("-std=gnu99")

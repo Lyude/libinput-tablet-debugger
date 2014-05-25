@@ -48,15 +48,26 @@
 #include <string.h>
 
 #include <ncurses.h>
+#include <panel.h>
+
 #include <libinput.h>
 #include <libudev.h>
+
+#include "field_locations.h"
 
 static struct udev *udev;
 static struct libinput *li;
 static const char *seat = "seat0";
 
-static struct libinput_device ** tablets = NULL;
 static int tablet_count = 0;
+
+struct tablet_panel {
+	WINDOW * window;
+	PANEL * panel;
+};
+
+static struct tablet_panel placeholder_panel;
+static struct tablet_panel * current_panel;
 
 static int
 open_restricted(const char *path, int flags, void *user_data)
@@ -104,59 +115,71 @@ open_udev() {
 	/*[> do nothing for right now <]*/
 /*}*/
 
+static inline void
+update_display() {
+	update_panels();
+	doupdate();
+}
+
+static struct tablet_panel *
+new_tablet_panel(struct libinput_device * dev) {
+	struct tablet_panel * panel;
+
+	panel = malloc(sizeof(struct tablet_panel));
+	panel->window = newwin(0, 0, 0, 0);
+	panel->panel = new_panel(panel->window);
+
+	/* Draw all the default fields */
+	mvwprintw(panel->window, TABLET_SYSTEM_NAME_ROW,
+		  TABLET_SYSTEM_NAME_COLUMN,
+		  "System name: %s", libinput_device_get_sysname(dev));
+
+	return panel;
+}
 
 static void
 handle_new_device(struct libinput_event *ev) {
 	struct libinput_device *dev = libinput_event_get_device(ev);
-	int * user_data = malloc(sizeof(int));
+	struct tablet_panel * panel;
 
 	if (!libinput_device_has_capability(dev, LIBINPUT_DEVICE_CAP_STYLUS))
 		return;
 
 	libinput_device_ref(dev);
 
-	*user_data = tablet_count; // store the position of the tablet with libinput
+	panel = new_tablet_panel(dev);
+	bottom_panel(panel->panel);
 
-	tablets = realloc(tablets,
-			  sizeof(struct libinput_device*) * ++tablet_count);
-	tablets[tablet_count - 1] = dev;
+	/* If this is our only tablet, get rid of the placeholder panel */
+	if (++tablet_count == 1) {
+		hide_panel(placeholder_panel.panel);
+		update_display();
+		current_panel = panel;
+	}
 
-	libinput_device_set_user_data(dev, user_data);
+	libinput_device_set_user_data(dev, panel);
 }
 
 static void
 handle_removed_device(struct libinput_event *ev) {
 	struct libinput_device *dev = libinput_event_get_device(ev);
-	size_t tablets_len;
-	int * pos;
+	struct tablet_panel * panel;
 	
 	if (!libinput_device_has_capability(dev, LIBINPUT_DEVICE_CAP_STYLUS))
 		return;
 
-	tablets_len = sizeof(struct libinput_device *) * tablet_count;
-	pos = libinput_device_get_user_data(dev);
+	panel = libinput_device_get_user_data(dev);
+	del_panel(panel->panel);
+	delwin(panel->window);
+	free(panel);
 
-	memmove(&tablets[*pos], &tablets[*pos] + 1,
-		tablets_len - sizeof(struct libinput_device *) *
-		              (tablet_count - *pos));
+	if (--tablet_count == 0) {
+		show_panel(placeholder_panel.panel);
+		update_display();
+		current_panel = &placeholder_panel;
+	}
 
-	tablets = realloc(tablets, tablets_len - sizeof(struct libinput_device*));
-	tablet_count--;
 	libinput_device_unref(dev);
-}
-
-static void
-refresh_display() {
-	clear();
-
-	if (tablet_count == 0) {
-		printw("No tablets connected!");
-	}
-	else {
-		printw("We'll have something here soon.");
-	}
-
-	refresh();
 }
 
 static int
@@ -177,8 +200,6 @@ handle_tablet_events() {
 		default:
 			break;
 		}
-
-		refresh_display();
 	}
 	
 	return 0;
@@ -210,12 +231,20 @@ mainloop() {
 				strerror(errno));
 	}
 
+	/* Create the placeholder panel */
+	placeholder_panel.window = newwin(0, 0, 0, 0);
+	placeholder_panel.panel = new_panel(placeholder_panel.window);
+	wprintw(placeholder_panel.window,
+		"There are no currently detected tablets.\n"
+		"Make sure your tablet is plugged in, and that you have the "
+		"right permissions.");
+	show_panel(placeholder_panel.panel);
+	update_display();
+
 	/* Handle already-pending device added events */
 	if (handle_tablet_events())
 		fprintf(stderr, "Expected device added events on startup but got none. "
 				"Maybe you don't have the right permissions?\n");
-
-	refresh_display();
 
 	while (poll(fds, 3, -1) > -1) {
 		if (fds[1].revents)
@@ -224,6 +253,18 @@ mainloop() {
 			switch(getch()) {
 			case 'q':
 				goto exit_mainloop;
+			case KEY_LEFT:
+				top_panel(panel_below(NULL));
+				show_panel(panel_above(NULL));
+
+				update_display();
+				break;
+			case KEY_RIGHT:
+				bottom_panel(panel_above(NULL));
+				show_panel(panel_above(NULL));
+
+				update_display();
+				break;
 			}
 		}
 		else

@@ -22,4 +22,4 @@ add_definitions(${LIBINPUT_CFLAG_OTHER})
 add_executable(li-tablet-debug main.c)
 
 target_link_libraries(li-tablet-debug ${LIBINPUT_LIBRARIES}
-	${CURSES_LIBRARIES} ${UDEV_LIBRARIES})
+	${CURSES_LIBRARIES} ${UDEV_LIBRARIES} ${PANEL_LIBRARIES})
