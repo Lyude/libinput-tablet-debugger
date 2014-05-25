@@ -67,7 +67,6 @@ struct tablet_panel {
 };
 
 static struct tablet_panel placeholder_panel;
-static struct tablet_panel * current_panel;
 
 static int
 open_restricted(const char *path, int flags, void *user_data)
@@ -154,7 +153,6 @@ handle_new_device(struct libinput_event *ev) {
 	if (++tablet_count == 1) {
 		hide_panel(placeholder_panel.panel);
 		update_display();
-		current_panel = panel;
 	}
 
 	libinput_device_set_user_data(dev, panel);
@@ -176,7 +174,6 @@ handle_removed_device(struct libinput_event *ev) {
 	if (--tablet_count == 0) {
 		show_panel(placeholder_panel.panel);
 		update_display();
-		current_panel = &placeholder_panel;
 	}
 
 	libinput_device_unref(dev);
