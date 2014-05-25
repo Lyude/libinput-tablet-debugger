@@ -147,9 +147,14 @@ handle_removed_device(struct libinput_event *ev) {
 
 static void
 refresh_display() {
-	/* Maybe someday I'll implement a damage system. Maybe. */
 	clear();
-	printw("Tablets Connected: %d\n", tablet_count);
+
+	if (tablet_count == 0) {
+		printw("No tablets connected!");
+	}
+	else {
+		printw("We'll have something here soon.");
+	}
 
 	refresh();
 }
