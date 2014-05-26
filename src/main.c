@@ -71,6 +71,12 @@ struct tablet_panel {
 	li_fixed_t x;
 	li_fixed_t y;
 	char * tool_str;
+
+	li_fixed_t tilt_vertical;
+	li_fixed_t tilt_horizontal;
+
+	li_fixed_t pressure;
+	li_fixed_t distance;
 };
 
 static struct tablet_panel placeholder_panel;
@@ -151,6 +157,14 @@ paint_panel(struct tablet_panel * panel) {
 		  "Current tool: %s", panel->tool_str);
 	mvwprintw(panel->window, TABLET_X_ROW, 0, "X: %d", panel->x);
 	mvwprintw(panel->window, TABLET_Y_ROW, 0, "Y: %d", panel->y);
+	mvwprintw(panel->window, TABLET_TILT_VERTICAL_ROW, 0,
+		  "Vertical tilt: %d", panel->tilt_vertical);
+	mvwprintw(panel->window, TABLET_TILT_HORIZONTAL_ROW, 0,
+		  "Horizontal tilt: %d", panel->tilt_horizontal);
+	mvwprintw(panel->window, TABLET_DISTANCE_ROW, 0,
+		  "Distance: %d", panel->distance);
+	mvwprintw(panel->window, TABLET_PRESSURE_ROW, 0,
+		  "Pressure: %d", panel->pressure);
 }
 
 static struct tablet_panel *
@@ -270,6 +284,45 @@ handle_tool_update(struct libinput_event_pointer *ev,
 	panel->tool_str = tool_str;
 }
 
+static void
+handle_axis_update(struct libinput_event_pointer *ev,
+		   struct libinput_device *dev) {
+	struct tablet_panel * panel;
+	enum libinput_pointer_axis axis;
+	li_fixed_t value;
+
+	panel = libinput_device_get_user_data(dev);
+	axis = libinput_event_pointer_get_axis(ev);
+	value = libinput_event_pointer_get_axis_value(ev);
+
+	switch (axis) {
+	case LIBINPUT_POINTER_AXIS_TILT_VERTICAL:
+		update_line(panel, TABLET_TILT_VERTICAL_ROW, 
+			    "Vertical tilt: %d", value);
+
+		panel->tilt_vertical = value;
+		break;
+	case LIBINPUT_POINTER_AXIS_TILT_HORIZONTAL:
+		update_line(panel, TABLET_TILT_HORIZONTAL_ROW,
+			    "Horizontal tilt: %d", value);
+
+		panel->tilt_horizontal = value;
+		break;
+	case LIBINPUT_POINTER_AXIS_DISTANCE:
+		update_line(panel, TABLET_DISTANCE_ROW, "Distance: %d", value);
+
+		panel->distance = value;
+		break;
+	case LIBINPUT_POINTER_AXIS_PRESSURE:
+		update_line(panel, TABLET_PRESSURE_ROW, "Pressure: %d", value);
+
+		panel->pressure = value;
+		break;
+	default:
+		break;
+	}
+}
+
 static int
 handle_tablet_events() {
 	struct libinput_event *ev;
@@ -296,6 +349,10 @@ handle_tablet_events() {
 			break;
 		case LIBINPUT_EVENT_POINTER_TOOL_UPDATE:
 			handle_tool_update(libinput_event_get_pointer_event(ev),
+					   dev);
+			break;
+		case LIBINPUT_EVENT_POINTER_AXIS:
+			handle_axis_update(libinput_event_get_pointer_event(ev),
 					   dev);
 			break;
 		default:

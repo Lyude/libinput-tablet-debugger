@@ -17,11 +17,17 @@
 #ifndef FIELD_LOCATIONS_H
 #define FIELD_LOCATIONS_H
 
-#define TABLET_SYSTEM_NAME_ROW    0
+#define TABLET_SYSTEM_NAME_ROW     0
 
-#define TABLET_TOOL_NAME_ROW      2
+#define TABLET_TOOL_NAME_ROW       2
 
-#define TABLET_X_ROW              4
-#define TABLET_Y_ROW              5
+#define TABLET_X_ROW               4
+#define TABLET_Y_ROW               5
+
+#define TABLET_TILT_VERTICAL_ROW   7
+#define TABLET_TILT_HORIZONTAL_ROW 8
+
+#define TABLET_DISTANCE_ROW        10
+#define TABLET_PRESSURE_ROW        11
 
 #endif /* FIELD_LOCATIONS_H */
