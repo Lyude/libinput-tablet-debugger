@@ -128,6 +128,22 @@ update_display() {
 }
 
 static void
+update_line(struct tablet_panel * panel,
+	    int line,
+	    const char * format,
+	    ...) {
+	va_list args;
+
+	wmove(panel->window, line, 0);
+
+	va_start(args, format);
+	vwprintw(panel->window, format, args); 
+	va_end(args);
+
+	wclrtoeol(panel->window);
+}
+
+static void
 paint_panel(struct tablet_panel * panel) {
 	mvwprintw(panel->window, TABLET_SYSTEM_NAME_ROW, 0,
 		  "System name: %s", libinput_device_get_sysname(panel->dev));
@@ -199,11 +215,8 @@ handle_pointer_motion(struct libinput_event_pointer *ev,
 
 	panel = libinput_device_get_user_data(dev);
 
-	mvwprintw(panel->window, TABLET_X_ROW, 0, "X: %d", x);
-	wclrtoeol(panel->window);
-
-	mvwprintw(panel->window, TABLET_Y_ROW, 0, "Y: %d", y);
-	wclrtoeol(panel->window);
+	update_line(panel, TABLET_X_ROW, "X: %d", x);
+	update_line(panel, TABLET_Y_ROW, "Y: %d", y);
 
 	panel->x = x;
 	panel->y = y;
@@ -252,9 +265,7 @@ handle_tool_update(struct libinput_event_pointer *ev,
 		break;
 	}
 
-	mvwprintw(panel->window, TABLET_TOOL_NAME_ROW, 0,
-		  "Current tool: %s", tool_str);
-	wclrtoeol(panel->window);
+	update_line(panel, TABLET_TOOL_NAME_ROW, "Current tool: %s", tool_str);
 
 	panel->tool_str = tool_str;
 }
