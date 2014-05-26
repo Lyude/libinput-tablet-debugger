@@ -31,6 +31,8 @@
 #define TABLET_DISTANCE_ROW        10
 #define TABLET_PRESSURE_ROW        11
 
+#define TABLET_STYLUS_BUTTONS_ROW  13
+
 /* The text in each field */
 #define TABLET_SYSTEM_NAME_FIELD     "System name: %s"
 #define TABLET_STYLUS_TOUCHING_FIELD "Stylus is touching tablet? %s"
@@ -44,5 +46,7 @@
 
 #define TABLET_DISTANCE_FIELD        "Distance: %d"
 #define TABLET_PRESSURE_FIELD        "Pressure: %d"
+
+#define TABLET_STYLUS_BUTTONS_FIELD  "Stylus Buttons: #1: %-5s  #2: %s"
 
 #endif /* FIELD_LOCATIONS_H */

@@ -83,6 +83,9 @@ struct tablet_panel {
 
 	li_fixed_t pressure;
 	li_fixed_t distance;
+
+	enum libinput_pointer_button_state stylus_button_1;
+	enum libinput_pointer_button_state stylus_button_2;
 };
 
 static struct tablet_panel placeholder_panel;
@@ -133,6 +136,13 @@ open_udev() {
 	/*[> do nothing for right now <]*/
 /*}*/
 
+static const char *
+button_to_string(uint32_t button) {
+	switch(button) {
+		
+	}
+}
+
 static inline void
 update_display() {
 	update_panels();
@@ -178,6 +188,11 @@ paint_panel(struct tablet_panel * panel) {
 		  TABLET_DISTANCE_FIELD, panel->distance);
 	mvwprintw(panel->window, TABLET_PRESSURE_ROW, 0,
 		  TABLET_PRESSURE_FIELD, panel->pressure);
+
+	mvwprintw(panel->window, TABLET_STYLUS_BUTTONS_ROW, 0,
+		  TABLET_STYLUS_BUTTONS_FIELD,
+		  bool_to_string(panel->stylus_button_1),
+		  bool_to_string(panel->stylus_button_2));
 }
 
 static struct tablet_panel *
@@ -355,6 +370,20 @@ handle_button_update(struct libinput_event_pointer* ev,
 			    TABLET_STYLUS_TOUCHING_FIELD,
 			    bool_to_string(state));
 		panel->stylus_touching = state;
+		break;
+	case BTN_STYLUS:
+		update_line(panel, TABLET_STYLUS_BUTTONS_ROW,
+			    TABLET_STYLUS_BUTTONS_FIELD,
+			    bool_to_string(state),
+			    bool_to_string(panel->stylus_button_2));
+		panel->stylus_button_1 = state;
+		break;
+	case BTN_STYLUS2:
+		update_line(panel, TABLET_STYLUS_BUTTONS_ROW,
+			    TABLET_STYLUS_BUTTONS_FIELD,
+			    bool_to_string(panel->stylus_button_1),
+			    bool_to_string(state));
+		panel->stylus_button_2 = state;
 		break;
 	default:
 		return;
