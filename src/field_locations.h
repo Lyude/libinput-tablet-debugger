@@ -20,4 +20,9 @@
 #define TABLET_SYSTEM_NAME_ROW    0
 #define TABLET_SYSTEM_NAME_COLUMN 0
 
+#define TABLET_X_ROW              2
+#define TABLET_X_COLUMN           0
+#define TABLET_Y_ROW              3
+#define TABLET_Y_COLUMN           0
+
 #endif /* FIELD_LOCATIONS_H */

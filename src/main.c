@@ -69,6 +69,9 @@ struct tablet_panel {
 	WINDOW * window;
 	PANEL * panel;
 	struct libinput_device * dev;
+
+	li_fixed_t x;
+	li_fixed_t y;
 };
 
 static struct tablet_panel placeholder_panel;
@@ -130,6 +133,10 @@ paint_panel(struct tablet_panel * panel) {
 	mvwprintw(panel->window, TABLET_SYSTEM_NAME_ROW,
 		  TABLET_SYSTEM_NAME_COLUMN,
 		  "System name: %s", libinput_device_get_sysname(panel->dev));
+	mvwprintw(panel->window, TABLET_X_ROW, TABLET_X_COLUMN,
+		  "X: %d", panel->x);
+	mvwprintw(panel->window, TABLET_Y_ROW, TABLET_Y_COLUMN,
+		  "Y: %d", panel->y);
 }
 
 static struct tablet_panel *
@@ -137,6 +144,7 @@ new_tablet_panel(struct libinput_device * dev) {
 	struct tablet_panel * panel;
 
 	panel = malloc(sizeof(struct tablet_panel));
+	memset(panel, 0, sizeof(struct tablet_panel));
 	panel->window = newwin(0, 0, 0, 0);
 	panel->panel = new_panel(panel->window);
 	panel->dev = dev;
@@ -184,6 +192,27 @@ handle_removed_device(struct libinput_event *ev,
 	libinput_device_unref(dev);
 }
 
+static void
+handle_pointer_motion(struct libinput_event_pointer *ev,
+		      struct libinput_device *dev) {
+	struct tablet_panel * panel;
+	li_fixed_t x = libinput_event_pointer_get_absolute_x(ev);
+	li_fixed_t y = libinput_event_pointer_get_absolute_y(ev);
+
+	panel = libinput_device_get_user_data(dev);
+
+	mvwprintw(panel->window, TABLET_X_ROW, TABLET_X_COLUMN, "X: %d", x);
+	wclrtoeol(panel->window);
+
+	mvwprintw(panel->window, TABLET_Y_ROW, TABLET_Y_COLUMN, "Y: %d", y);
+	wclrtoeol(panel->window);
+
+	panel->x = x;
+	panel->y = y;
+
+	update_display();
+}
+
 static int
 handle_tablet_events() {
 	struct libinput_event *ev;
@@ -203,6 +232,10 @@ handle_tablet_events() {
 			break;
 		case LIBINPUT_EVENT_DEVICE_REMOVED:
 			handle_removed_device(ev, dev);
+			break;
+		case LIBINPUT_EVENT_POINTER_MOTION_ABSOLUTE:
+			handle_pointer_motion(libinput_event_get_pointer_event(ev),
+					      dev);
 			break;
 		default:
 			break;
