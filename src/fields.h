@@ -17,6 +17,7 @@
 #ifndef FIELD_LOCATIONS_H
 #define FIELD_LOCATIONS_H
 
+/* The position of each field */
 #define TABLET_SYSTEM_NAME_ROW     0
 #define TABLET_STYLUS_TOUCHING_ROW 1
 
@@ -29,5 +30,19 @@
 
 #define TABLET_DISTANCE_ROW        10
 #define TABLET_PRESSURE_ROW        11
+
+/* The text in each field */
+#define TABLET_SYSTEM_NAME_FIELD     "System name: %s"
+#define TABLET_STYLUS_TOUCHING_FIELD "Stylus is touching tablet? %s"
+
+#define TABLET_TOOL_NAME_FIELD       "Current tool: %s"
+
+#define TABLET_X_AND_Y_FIELD         "X: %7d Y: %7d"
+
+#define TABLET_TILT_VERTICAL_FIELD   "Vertical tilt: %d"
+#define TABLET_TILT_HORIZONTAL_FIELD "Horizontal tilt: %d"
+
+#define TABLET_DISTANCE_FIELD        "Distance: %d"
+#define TABLET_PRESSURE_FIELD        "Pressure: %d"
 
 #endif /* FIELD_LOCATIONS_H */

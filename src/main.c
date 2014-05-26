@@ -57,7 +57,7 @@
 #include <libinput.h>
 #include <libudev.h>
 
-#include "field_locations.h"
+#include "fields.h"
 
 #define bool_to_string(bool_) (bool_ ? "True" : "False")
 
@@ -158,22 +158,22 @@ update_line(struct tablet_panel * panel,
 static void
 paint_panel(struct tablet_panel * panel) {
 	mvwprintw(panel->window, TABLET_SYSTEM_NAME_ROW, 0,
-		  "System name: %s", libinput_device_get_sysname(panel->dev));
+		  TABLET_SYSTEM_NAME_FIELD, libinput_device_get_sysname(panel->dev));
 	mvwprintw(panel->window, TABLET_STYLUS_TOUCHING_ROW, 0,
-		  "Stylus is touching tablet? %s",
+		  TABLET_STYLUS_TOUCHING_FIELD,
 		  bool_to_string(panel->stylus_touching));
 	mvwprintw(panel->window, TABLET_TOOL_NAME_ROW, 0,
-		  "Current tool: %s", panel->tool_str);
+		  TABLET_TOOL_NAME_FIELD, panel->tool_str);
 	mvwprintw(panel->window, TABLET_X_AND_Y_ROW, 0,
-		  "X: %7d Y: %7d", panel->x);
+		  TABLET_X_AND_Y_FIELD, panel->x);
 	mvwprintw(panel->window, TABLET_TILT_VERTICAL_ROW, 0,
-		  "Vertical tilt: %d", panel->tilt_vertical);
+		  TABLET_TILT_VERTICAL_FIELD, panel->tilt_vertical);
 	mvwprintw(panel->window, TABLET_TILT_HORIZONTAL_ROW, 0,
-		  "Horizontal tilt: %d", panel->tilt_horizontal);
+		  TABLET_TILT_HORIZONTAL_FIELD, panel->tilt_horizontal);
 	mvwprintw(panel->window, TABLET_DISTANCE_ROW, 0,
-		  "Distance: %d", panel->distance);
+		  TABLET_DISTANCE_FIELD, panel->distance);
 	mvwprintw(panel->window, TABLET_PRESSURE_ROW, 0,
-		  "Pressure: %d", panel->pressure);
+		  TABLET_PRESSURE_FIELD, panel->pressure);
 }
 
 static struct tablet_panel *
@@ -238,7 +238,7 @@ handle_pointer_motion(struct libinput_event_pointer *ev,
 
 	panel = libinput_device_get_user_data(dev);
 
-	update_line(panel, TABLET_X_AND_Y_ROW, "X: %7d Y: %7d", x, y);
+	update_line(panel, TABLET_X_AND_Y_ROW, TABLET_X_AND_Y_FIELD, x, y);
 
 	panel->x = x;
 	panel->y = y;
@@ -287,7 +287,8 @@ handle_tool_update(struct libinput_event_pointer *ev,
 		break;
 	}
 
-	update_line(panel, TABLET_TOOL_NAME_ROW, "Current tool: %s", tool_str);
+	update_line(panel, TABLET_TOOL_NAME_ROW, TABLET_TOOL_NAME_FIELD,
+		    tool_str);
 
 	panel->tool_str = tool_str;
 }
@@ -306,23 +307,25 @@ handle_axis_update(struct libinput_event_pointer *ev,
 	switch (axis) {
 	case LIBINPUT_POINTER_AXIS_TILT_VERTICAL:
 		update_line(panel, TABLET_TILT_VERTICAL_ROW, 
-			    "Vertical tilt: %d", value);
+			    TABLET_TILT_VERTICAL_FIELD, value);
 
 		panel->tilt_vertical = value;
 		break;
 	case LIBINPUT_POINTER_AXIS_TILT_HORIZONTAL:
 		update_line(panel, TABLET_TILT_HORIZONTAL_ROW,
-			    "Horizontal tilt: %d", value);
+			    TABLET_TILT_HORIZONTAL_FIELD, value);
 
 		panel->tilt_horizontal = value;
 		break;
 	case LIBINPUT_POINTER_AXIS_DISTANCE:
-		update_line(panel, TABLET_DISTANCE_ROW, "Distance: %d", value);
+		update_line(panel, TABLET_DISTANCE_ROW, TABLET_DISTANCE_FIELD,
+			    value);
 
 		panel->distance = value;
 		break;
 	case LIBINPUT_POINTER_AXIS_PRESSURE:
-		update_line(panel, TABLET_PRESSURE_ROW, "Pressure: %d", value);
+		update_line(panel, TABLET_PRESSURE_ROW, TABLET_PRESSURE_FIELD,
+			    value);
 
 		panel->pressure = value;
 		break;
@@ -345,7 +348,7 @@ handle_button_update(struct libinput_event_pointer* ev,
 	switch(button) {
 	case BTN_TOUCH:
 		update_line(panel, TABLET_STYLUS_TOUCHING_ROW,
-			    "Stylus is touching tablet? %s",
+			    TABLET_STYLUS_TOUCHING_FIELD,
 			    bool_to_string(state));
 		panel->stylus_touching = state;
 		break;
