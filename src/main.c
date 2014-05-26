@@ -131,15 +131,12 @@ update_display() {
 
 static void
 paint_panel(struct tablet_panel * panel) {
-	mvwprintw(panel->window, TABLET_SYSTEM_NAME_ROW,
-		  TABLET_SYSTEM_NAME_COLUMN,
+	mvwprintw(panel->window, TABLET_SYSTEM_NAME_ROW, 0,
 		  "System name: %s", libinput_device_get_sysname(panel->dev));
-	mvwprintw(panel->window, TABLET_TOOL_NAME_ROW, TABLET_TOOL_NAME_COLUMN,
+	mvwprintw(panel->window, TABLET_TOOL_NAME_ROW, 0,
 		  "Current tool: %s", panel->tool_str);
-	mvwprintw(panel->window, TABLET_X_ROW, TABLET_X_COLUMN,
-		  "X: %d", panel->x);
-	mvwprintw(panel->window, TABLET_Y_ROW, TABLET_Y_COLUMN,
-		  "Y: %d", panel->y);
+	mvwprintw(panel->window, TABLET_X_ROW, 0, "X: %d", panel->x);
+	mvwprintw(panel->window, TABLET_Y_ROW, 0, "Y: %d", panel->y);
 }
 
 static struct tablet_panel *
@@ -204,10 +201,10 @@ handle_pointer_motion(struct libinput_event_pointer *ev,
 
 	panel = libinput_device_get_user_data(dev);
 
-	mvwprintw(panel->window, TABLET_X_ROW, TABLET_X_COLUMN, "X: %d", x);
+	mvwprintw(panel->window, TABLET_X_ROW, 0, "X: %d", x);
 	wclrtoeol(panel->window);
 
-	mvwprintw(panel->window, TABLET_Y_ROW, TABLET_Y_COLUMN, "Y: %d", y);
+	mvwprintw(panel->window, TABLET_Y_ROW, 0, "Y: %d", y);
 	wclrtoeol(panel->window);
 
 	panel->x = x;
@@ -257,7 +254,7 @@ handle_tool_update(struct libinput_event_pointer *ev,
 		break;
 	}
 
-	mvwprintw(panel->window, TABLET_TOOL_NAME_ROW, TABLET_TOOL_NAME_COLUMN,
+	mvwprintw(panel->window, TABLET_TOOL_NAME_ROW, 0,
 		  "Current tool: %s", tool_str);
 	wclrtoeol(panel->window);
 
