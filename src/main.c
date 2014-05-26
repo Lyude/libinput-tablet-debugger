@@ -49,6 +49,8 @@
 #include <string.h>
 #include <termios.h>
 
+#include <linux/input.h>
+
 #include <ncurses.h>
 #include <panel.h>
 
@@ -69,6 +71,8 @@ struct tablet_panel {
 	WINDOW * window;
 	PANEL * panel;
 	struct libinput_device * dev;
+
+	bool stylus_touching;
 
 	li_fixed_t x;
 	li_fixed_t y;
@@ -155,6 +159,9 @@ static void
 paint_panel(struct tablet_panel * panel) {
 	mvwprintw(panel->window, TABLET_SYSTEM_NAME_ROW, 0,
 		  "System name: %s", libinput_device_get_sysname(panel->dev));
+	mvwprintw(panel->window, TABLET_STYLUS_TOUCHING_ROW, 0,
+		  "Stylus is touching tablet? %s",
+		  bool_to_string(panel->stylus_touching));
 	mvwprintw(panel->window, TABLET_TOOL_NAME_ROW, 0,
 		  "Current tool: %s", panel->tool_str);
 	mvwprintw(panel->window, TABLET_X_ROW, 0, "X: %d", panel->x);
@@ -325,6 +332,29 @@ handle_axis_update(struct libinput_event_pointer *ev,
 	}
 }
 
+static void
+handle_button_update(struct libinput_event_pointer* ev,
+		     struct libinput_device *dev) {
+	struct tablet_panel * panel;
+	uint32_t button;
+	enum libinput_pointer_button_state state;
+
+	panel = libinput_device_get_user_data(dev);
+	button = libinput_event_pointer_get_button(ev);
+	state = libinput_event_pointer_get_button_state(ev);
+
+	switch(button) {
+	case BTN_TOUCH:
+		update_line(panel, TABLET_STYLUS_TOUCHING_ROW,
+			    "Stylus is touching tablet? %s",
+			    bool_to_string(state));
+		panel->stylus_touching = state;
+		break;
+	default:
+		return;
+	}
+}
+
 static int
 handle_tablet_events() {
 	struct libinput_event *ev;
@@ -356,6 +386,10 @@ handle_tablet_events() {
 		case LIBINPUT_EVENT_POINTER_AXIS:
 			handle_axis_update(libinput_event_get_pointer_event(ev),
 					   dev);
+			break;
+		case LIBINPUT_EVENT_POINTER_BUTTON:
+			handle_button_update(libinput_event_get_pointer_event(ev),
+					     dev);
 			break;
 		default:
 			break;
