@@ -72,6 +72,7 @@ struct tablet_panel {
 
 	li_fixed_t x;
 	li_fixed_t y;
+	char * tool_str;
 };
 
 static struct tablet_panel placeholder_panel;
@@ -133,6 +134,8 @@ paint_panel(struct tablet_panel * panel) {
 	mvwprintw(panel->window, TABLET_SYSTEM_NAME_ROW,
 		  TABLET_SYSTEM_NAME_COLUMN,
 		  "System name: %s", libinput_device_get_sysname(panel->dev));
+	mvwprintw(panel->window, TABLET_TOOL_NAME_ROW, TABLET_TOOL_NAME_COLUMN,
+		  "Current tool: %s", panel->tool_str);
 	mvwprintw(panel->window, TABLET_X_ROW, TABLET_X_COLUMN,
 		  "X: %d", panel->x);
 	mvwprintw(panel->window, TABLET_Y_ROW, TABLET_Y_COLUMN,
@@ -213,6 +216,54 @@ handle_pointer_motion(struct libinput_event_pointer *ev,
 	update_display();
 }
 
+static void
+handle_tool_update(struct libinput_event_pointer *ev,
+		   struct libinput_device *dev) {
+	struct tablet_panel * panel;
+	char * tool_str;
+
+	panel = libinput_device_get_user_data(dev);
+
+	switch (libinput_tool_get_type(libinput_event_pointer_get_tool(ev))) {
+	case LIBINPUT_TOOL_NONE:
+		tool_str = "None";
+		break;
+	case LIBINPUT_TOOL_PEN:
+		tool_str = "Pen";
+		break;
+	case LIBINPUT_TOOL_ERASER:
+		tool_str = "Eraser";
+		break;
+	case LIBINPUT_TOOL_BRUSH:
+		tool_str = "Brush";
+		break;
+	case LIBINPUT_TOOL_PENCIL:
+		tool_str = "Pencil";
+		break;
+	case LIBINPUT_TOOL_AIRBRUSH:
+		tool_str = "Airbrush";
+		break;
+	case LIBINPUT_TOOL_FINGER:
+		tool_str = "Finger";
+		break;
+	case LIBINPUT_TOOL_MOUSE:
+		tool_str = "Mouse";
+		break;
+	case LIBINPUT_TOOL_LENS:
+		tool_str = "Lens";
+		break;
+	default:
+		tool_str = "???";
+		break;
+	}
+
+	mvwprintw(panel->window, TABLET_TOOL_NAME_ROW, TABLET_TOOL_NAME_COLUMN,
+		  "Current tool: %s", tool_str);
+	wclrtoeol(panel->window);
+
+	panel->tool_str = tool_str;
+}
+
 static int
 handle_tablet_events() {
 	struct libinput_event *ev;
@@ -236,6 +287,10 @@ handle_tablet_events() {
 		case LIBINPUT_EVENT_POINTER_MOTION_ABSOLUTE:
 			handle_pointer_motion(libinput_event_get_pointer_event(ev),
 					      dev);
+			break;
+		case LIBINPUT_EVENT_POINTER_TOOL_UPDATE:
+			handle_tool_update(libinput_event_get_pointer_event(ev),
+					   dev);
 			break;
 		default:
 			break;
