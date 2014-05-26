@@ -22,13 +22,12 @@
 
 #define TABLET_TOOL_NAME_ROW       3
 
-#define TABLET_X_ROW               5
-#define TABLET_Y_ROW               6
+#define TABLET_X_AND_Y_ROW         5
 
-#define TABLET_TILT_VERTICAL_ROW   8
-#define TABLET_TILT_HORIZONTAL_ROW 9
+#define TABLET_TILT_VERTICAL_ROW   7
+#define TABLET_TILT_HORIZONTAL_ROW 8
 
-#define TABLET_DISTANCE_ROW        11
-#define TABLET_PRESSURE_ROW        12
+#define TABLET_DISTANCE_ROW        10
+#define TABLET_PRESSURE_ROW        11
 
 #endif /* FIELD_LOCATIONS_H */

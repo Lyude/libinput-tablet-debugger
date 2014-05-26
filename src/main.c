@@ -164,8 +164,8 @@ paint_panel(struct tablet_panel * panel) {
 		  bool_to_string(panel->stylus_touching));
 	mvwprintw(panel->window, TABLET_TOOL_NAME_ROW, 0,
 		  "Current tool: %s", panel->tool_str);
-	mvwprintw(panel->window, TABLET_X_ROW, 0, "X: %d", panel->x);
-	mvwprintw(panel->window, TABLET_Y_ROW, 0, "Y: %d", panel->y);
+	mvwprintw(panel->window, TABLET_X_AND_Y_ROW, 0,
+		  "X: %7d Y: %7d", panel->x);
 	mvwprintw(panel->window, TABLET_TILT_VERTICAL_ROW, 0,
 		  "Vertical tilt: %d", panel->tilt_vertical);
 	mvwprintw(panel->window, TABLET_TILT_HORIZONTAL_ROW, 0,
@@ -238,8 +238,7 @@ handle_pointer_motion(struct libinput_event_pointer *ev,
 
 	panel = libinput_device_get_user_data(dev);
 
-	update_line(panel, TABLET_X_ROW, "X: %d", x);
-	update_line(panel, TABLET_Y_ROW, "Y: %d", y);
+	update_line(panel, TABLET_X_AND_Y_ROW, "X: %7d Y: %7d", x, y);
 
 	panel->x = x;
 	panel->y = y;
