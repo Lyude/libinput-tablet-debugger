@@ -151,9 +151,6 @@ handle_new_device(struct libinput_event *ev,
 		  struct libinput_device *dev) {
 	struct tablet_panel * panel;
 
-	if (!libinput_device_has_capability(dev, LIBINPUT_DEVICE_CAP_STYLUS))
-		return;
-
 	libinput_device_ref(dev);
 
 	panel = new_tablet_panel(dev);
@@ -174,9 +171,6 @@ handle_removed_device(struct libinput_event *ev,
 		      struct libinput_device *dev) {
 	struct tablet_panel * panel;
 	
-	if (!libinput_device_has_capability(dev, LIBINPUT_DEVICE_CAP_STYLUS))
-		return;
-
 	panel = libinput_device_get_user_data(dev);
 	del_panel(panel->panel);
 	delwin(panel->window);
@@ -197,6 +191,10 @@ handle_tablet_events() {
 	libinput_dispatch(li);
 	while ((ev = libinput_get_event(li))) {
 		struct libinput_device *dev = libinput_event_get_device(ev);
+
+		if (!libinput_device_has_capability(dev, LIBINPUT_DEVICE_CAP_STYLUS))
+			continue;
+
 		switch (libinput_event_get_type(ev)) {
 		case LIBINPUT_EVENT_NONE:
 			abort();
