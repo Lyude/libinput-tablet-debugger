@@ -177,7 +177,7 @@ paint_panel(struct tablet_panel * panel) {
 		  TABLET_TOOL_NAME_FIELD, panel->tool_str);
 
 	mvwprintw(panel->window, TABLET_X_AND_Y_ROW, 0,
-		  TABLET_X_AND_Y_FIELD, panel->x);
+		  TABLET_X_AND_Y_FIELD, panel->x, panel->y);
 
 	mvwprintw(panel->window, TABLET_TILT_VERTICAL_ROW, 0,
 		  TABLET_TILT_VERTICAL_FIELD, panel->tilt_vertical);
