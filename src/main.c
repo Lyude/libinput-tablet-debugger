@@ -57,6 +57,8 @@
 
 #include "field_locations.h"
 
+#define bool_to_string(bool_) (bool_ ? "True" : "False")
+
 static struct udev *udev;
 static struct libinput *li;
 static const char *seat = "seat0";
