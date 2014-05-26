@@ -162,14 +162,18 @@ paint_panel(struct tablet_panel * panel) {
 	mvwprintw(panel->window, TABLET_STYLUS_TOUCHING_ROW, 0,
 		  TABLET_STYLUS_TOUCHING_FIELD,
 		  bool_to_string(panel->stylus_touching));
+
 	mvwprintw(panel->window, TABLET_TOOL_NAME_ROW, 0,
 		  TABLET_TOOL_NAME_FIELD, panel->tool_str);
+
 	mvwprintw(panel->window, TABLET_X_AND_Y_ROW, 0,
 		  TABLET_X_AND_Y_FIELD, panel->x);
+
 	mvwprintw(panel->window, TABLET_TILT_VERTICAL_ROW, 0,
 		  TABLET_TILT_VERTICAL_FIELD, panel->tilt_vertical);
 	mvwprintw(panel->window, TABLET_TILT_HORIZONTAL_ROW, 0,
 		  TABLET_TILT_HORIZONTAL_FIELD, panel->tilt_horizontal);
+
 	mvwprintw(panel->window, TABLET_DISTANCE_ROW, 0,
 		  TABLET_DISTANCE_FIELD, panel->distance);
 	mvwprintw(panel->window, TABLET_PRESSURE_ROW, 0,
