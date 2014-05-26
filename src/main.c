@@ -1,5 +1,5 @@
 /*
- * Copyright ©2014 Lyude
+ * Copyright ©2013 Lyude
  *
  * This file is free software: you may copy it, redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -16,7 +16,7 @@
  * Some of this code has been adapted from event-debug.c from the libinput
  * project, to which the following copyrights and permissions apply:
  *
- * Copyright © 2014 Red Hat, Inc.
+ * Copyright © 2013 Red Hat, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
@@ -45,7 +45,9 @@
 #include <poll.h>
 #include <signal.h>
 #include <sys/signalfd.h>
+#include <sys/ioctl.h>
 #include <string.h>
+#include <termios.h>
 
 #include <ncurses.h>
 #include <panel.h>
@@ -54,6 +56,8 @@
 #include <libudev.h>
 
 #include "field_locations.h"
+
+#define CURRENT_PANEL (
 
 static struct udev *udev;
 static struct libinput *li;
@@ -64,6 +68,7 @@ static int tablet_count = 0;
 struct tablet_panel {
 	WINDOW * window;
 	PANEL * panel;
+	struct libinput_device * dev;
 };
 
 static struct tablet_panel placeholder_panel;
@@ -120,6 +125,13 @@ update_display() {
 	doupdate();
 }
 
+static void
+paint_panel(struct tablet_panel * panel) {
+	mvwprintw(panel->window, TABLET_SYSTEM_NAME_ROW,
+		  TABLET_SYSTEM_NAME_COLUMN,
+		  "System name: %s", libinput_device_get_sysname(panel->dev));
+}
+
 static struct tablet_panel *
 new_tablet_panel(struct libinput_device * dev) {
 	struct tablet_panel * panel;
@@ -127,11 +139,9 @@ new_tablet_panel(struct libinput_device * dev) {
 	panel = malloc(sizeof(struct tablet_panel));
 	panel->window = newwin(0, 0, 0, 0);
 	panel->panel = new_panel(panel->window);
+	panel->dev = dev;
 
-	/* Draw all the default fields */
-	mvwprintw(panel->window, TABLET_SYSTEM_NAME_ROW,
-		  TABLET_SYSTEM_NAME_COLUMN,
-		  "System name: %s", libinput_device_get_sysname(dev));
+	set_panel_userptr(panel->panel, panel);
 
 	return panel;
 }
@@ -148,6 +158,7 @@ handle_new_device(struct libinput_event *ev) {
 
 	panel = new_tablet_panel(dev);
 	bottom_panel(panel->panel);
+	paint_panel(panel);
 
 	/* If this is our only tablet, get rid of the placeholder panel */
 	if (++tablet_count == 1) {
@@ -213,6 +224,7 @@ mainloop() {
 
 	sigemptyset(&mask);
 	sigaddset(&mask, SIGINT);
+	sigaddset(&mask, SIGWINCH);
 
 	fds[1].fd = signalfd(-1, &mask, SFD_NONBLOCK);
 	fds[1].events = POLLIN;
@@ -244,8 +256,30 @@ mainloop() {
 				"Maybe you don't have the right permissions?\n");
 
 	while (poll(fds, 3, -1) > -1) {
-		if (fds[1].revents)
-			break;
+		if (fds[1].revents) {
+			int sig;
+			
+			/* Check what type of signal is waiting */
+			sigwait(&mask, &sig);
+
+			if (sig == SIGINT)
+				break;
+
+			endwin();
+			refresh();
+
+			/* Resize all of the panels and their windows */
+			for (PANEL * p = panel_above(NULL);
+			     p != NULL;
+			     p = panel_below(p))
+			{
+				struct tablet_panel * panel =
+					(void*)panel_userptr(p);
+
+				paint_panel(panel);
+			}
+			update_display();
+		}
 		else if (fds[2].revents) {
 			switch(getch()) {
 			case 'q':
@@ -291,6 +325,7 @@ main()
 	raw();
 	keypad(stdscr, true);
 	noecho();
+	clear();
 
 	mainloop();
 
