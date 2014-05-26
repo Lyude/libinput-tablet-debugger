@@ -57,8 +57,6 @@
 
 #include "field_locations.h"
 
-#define CURRENT_PANEL (
-
 static struct udev *udev;
 static struct libinput *li;
 static const char *seat = "seat0";
