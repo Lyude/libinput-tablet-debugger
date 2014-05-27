@@ -136,13 +136,6 @@ open_udev() {
 	/*[> do nothing for right now <]*/
 /*}*/
 
-static const char *
-button_to_string(uint32_t button) {
-	switch(button) {
-		
-	}
-}
-
 static inline void
 update_display() {
 	update_panels();
