@@ -39,13 +39,13 @@
 
 #define TABLET_TOOL_NAME_FIELD       "Current tool: %s"
 
-#define TABLET_X_AND_Y_FIELD         "X: %7d Y: %7d"
+#define TABLET_X_AND_Y_FIELD         "X: %7.3f Y: %7.3f"
 
-#define TABLET_TILT_VERTICAL_FIELD   "Vertical tilt: %d"
-#define TABLET_TILT_HORIZONTAL_FIELD "Horizontal tilt: %d"
+#define TABLET_TILT_VERTICAL_FIELD   "Vertical tilt: %.3f"
+#define TABLET_TILT_HORIZONTAL_FIELD "Horizontal tilt: %.3f"
 
-#define TABLET_DISTANCE_FIELD        "Distance: %d"
-#define TABLET_PRESSURE_FIELD        "Pressure: %d"
+#define TABLET_DISTANCE_FIELD        "Distance: %.3f"
+#define TABLET_PRESSURE_FIELD        "Pressure: %.3f"
 
 #define TABLET_STYLUS_BUTTONS_FIELD  "Stylus Buttons: #1: %-5s  #2: %s"
 

@@ -74,15 +74,15 @@ struct tablet_panel {
 
 	bool stylus_touching;
 
-	li_fixed_t x;
-	li_fixed_t y;
+	double x;
+	double y;
 	char * tool_str;
 
-	li_fixed_t tilt_vertical;
-	li_fixed_t tilt_horizontal;
+	double tilt_vertical;
+	double tilt_horizontal;
 
-	li_fixed_t pressure;
-	li_fixed_t distance;
+	double pressure;
+	double distance;
 
 	enum libinput_pointer_button_state stylus_button_1;
 	enum libinput_pointer_button_state stylus_button_2;
@@ -245,15 +245,13 @@ static void
 handle_pointer_motion(struct libinput_event_pointer *ev,
 		      struct libinput_device *dev) {
 	struct tablet_panel * panel;
-	li_fixed_t x = libinput_event_pointer_get_absolute_x(ev);
-	li_fixed_t y = libinput_event_pointer_get_absolute_y(ev);
 
 	panel = libinput_device_get_user_data(dev);
+	panel->x = li_fixed_to_double(libinput_event_pointer_get_absolute_x(ev));
+	panel->y = li_fixed_to_double(libinput_event_pointer_get_absolute_y(ev));
 
-	update_line(panel, TABLET_X_AND_Y_ROW, TABLET_X_AND_Y_FIELD, x, y);
-
-	panel->x = x;
-	panel->y = y;
+	update_line(panel, TABLET_X_AND_Y_ROW, TABLET_X_AND_Y_FIELD, panel->x,
+		    panel->y);
 
 	update_display();
 }
@@ -318,28 +316,30 @@ handle_axis_update(struct libinput_event_pointer *ev,
 
 	switch (axis) {
 	case LIBINPUT_POINTER_AXIS_TILT_VERTICAL:
-		update_line(panel, TABLET_TILT_VERTICAL_ROW, 
-			    TABLET_TILT_VERTICAL_FIELD, value);
+		panel->tilt_vertical = li_fixed_to_double(value);
 
-		panel->tilt_vertical = value;
+		update_line(panel, TABLET_TILT_VERTICAL_ROW, 
+			    TABLET_TILT_VERTICAL_FIELD,
+			    panel->tilt_vertical);
 		break;
 	case LIBINPUT_POINTER_AXIS_TILT_HORIZONTAL:
-		update_line(panel, TABLET_TILT_HORIZONTAL_ROW,
-			    TABLET_TILT_HORIZONTAL_FIELD, value);
+		panel->tilt_horizontal = li_fixed_to_double(value);
 
-		panel->tilt_horizontal = value;
+		update_line(panel, TABLET_TILT_HORIZONTAL_ROW,
+			    TABLET_TILT_HORIZONTAL_FIELD,
+			    panel->tilt_horizontal);
 		break;
 	case LIBINPUT_POINTER_AXIS_DISTANCE:
-		update_line(panel, TABLET_DISTANCE_ROW, TABLET_DISTANCE_FIELD,
-			    value);
+		panel->distance = li_fixed_to_double(value);
 
-		panel->distance = value;
+		update_line(panel, TABLET_DISTANCE_ROW, TABLET_DISTANCE_FIELD,
+			    panel->distance);
 		break;
 	case LIBINPUT_POINTER_AXIS_PRESSURE:
-		update_line(panel, TABLET_PRESSURE_ROW, TABLET_PRESSURE_FIELD,
-			    value);
+		panel->pressure = li_fixed_to_double(value);
 
-		panel->pressure = value;
+		update_line(panel, TABLET_PRESSURE_ROW, TABLET_PRESSURE_FIELD,
+			    panel->pressure);
 		break;
 	default:
 		break;
