@@ -84,8 +84,8 @@ struct tablet_panel {
 	double pressure;
 	double distance;
 
-	enum libinput_pointer_button_state stylus_button_1;
-	enum libinput_pointer_button_state stylus_button_2;
+	enum libinput_button_state stylus_button_1;
+	enum libinput_button_state stylus_button_2;
 };
 
 static struct tablet_panel placeholder_panel;
@@ -242,13 +242,13 @@ handle_removed_device(struct libinput_event *ev,
 }
 
 static void
-handle_pointer_motion(struct libinput_event_pointer *ev,
+handle_tablet_motion(struct libinput_event_tablet *ev,
 		      struct libinput_device *dev) {
 	struct tablet_panel * panel;
 
 	panel = libinput_device_get_user_data(dev);
-	panel->x = li_fixed_to_double(libinput_event_pointer_get_absolute_x(ev));
-	panel->y = li_fixed_to_double(libinput_event_pointer_get_absolute_y(ev));
+	panel->x = li_fixed_to_double(libinput_event_tablet_get_x(ev));
+	panel->y = li_fixed_to_double(libinput_event_tablet_get_y(ev));
 
 	update_line(panel, TABLET_X_AND_Y_ROW, TABLET_X_AND_Y_FIELD, panel->x,
 		    panel->y);
@@ -257,14 +257,14 @@ handle_pointer_motion(struct libinput_event_pointer *ev,
 }
 
 static void
-handle_tool_update(struct libinput_event_pointer *ev,
+handle_tool_update(struct libinput_event_tablet *ev,
 		   struct libinput_device *dev) {
 	struct tablet_panel * panel;
 	char * tool_str;
 
 	panel = libinput_device_get_user_data(dev);
 
-	switch (libinput_tool_get_type(libinput_event_pointer_get_tool(ev))) {
+	switch (libinput_tool_get_type(libinput_event_tablet_get_tool(ev))) {
 	case LIBINPUT_TOOL_NONE:
 		tool_str = "None";
 		break;
@@ -304,38 +304,38 @@ handle_tool_update(struct libinput_event_pointer *ev,
 }
 
 static void
-handle_axis_update(struct libinput_event_pointer *ev,
+handle_axis_update(struct libinput_event_tablet *ev,
 		   struct libinput_device *dev) {
 	struct tablet_panel * panel;
-	enum libinput_pointer_axis axis;
+	enum libinput_tablet_axis axis;
 	li_fixed_t value;
 
 	panel = libinput_device_get_user_data(dev);
-	axis = libinput_event_pointer_get_axis(ev);
-	value = libinput_event_pointer_get_axis_value(ev);
+	axis = libinput_event_tablet_get_axis(ev);
+	value = libinput_event_tablet_get_axis_value(ev, axis);
 
 	switch (axis) {
-	case LIBINPUT_POINTER_AXIS_TILT_VERTICAL:
+	case LIBINPUT_TABLET_AXIS_TILT_VERTICAL:
 		panel->tilt_vertical = li_fixed_to_double(value);
 
 		update_line(panel, TABLET_TILT_VERTICAL_ROW, 
 			    TABLET_TILT_VERTICAL_FIELD,
 			    panel->tilt_vertical);
 		break;
-	case LIBINPUT_POINTER_AXIS_TILT_HORIZONTAL:
+	case LIBINPUT_TABLET_AXIS_TILT_HORIZONTAL:
 		panel->tilt_horizontal = li_fixed_to_double(value);
 
 		update_line(panel, TABLET_TILT_HORIZONTAL_ROW,
 			    TABLET_TILT_HORIZONTAL_FIELD,
 			    panel->tilt_horizontal);
 		break;
-	case LIBINPUT_POINTER_AXIS_DISTANCE:
+	case LIBINPUT_TABLET_AXIS_DISTANCE:
 		panel->distance = li_fixed_to_double(value);
 
 		update_line(panel, TABLET_DISTANCE_ROW, TABLET_DISTANCE_FIELD,
 			    panel->distance);
 		break;
-	case LIBINPUT_POINTER_AXIS_PRESSURE:
+	case LIBINPUT_TABLET_AXIS_PRESSURE:
 		panel->pressure = li_fixed_to_double(value);
 
 		update_line(panel, TABLET_PRESSURE_ROW, TABLET_PRESSURE_FIELD,
@@ -347,15 +347,15 @@ handle_axis_update(struct libinput_event_pointer *ev,
 }
 
 static void
-handle_button_update(struct libinput_event_pointer* ev,
+handle_button_update(struct libinput_event_tablet* ev,
 		     struct libinput_device *dev) {
 	struct tablet_panel * panel;
 	uint32_t button;
-	enum libinput_pointer_button_state state;
+	enum libinput_button_state state;
 
 	panel = libinput_device_get_user_data(dev);
-	button = libinput_event_pointer_get_button(ev);
-	state = libinput_event_pointer_get_button_state(ev);
+	button = libinput_event_tablet_get_button(ev);
+	state = libinput_event_tablet_get_button_state(ev);
 
 	switch(button) {
 	case BTN_TOUCH:
@@ -403,20 +403,20 @@ handle_tablet_events() {
 		case LIBINPUT_EVENT_DEVICE_REMOVED:
 			handle_removed_device(ev, dev);
 			break;
-		case LIBINPUT_EVENT_POINTER_MOTION_ABSOLUTE:
-			handle_pointer_motion(libinput_event_get_pointer_event(ev),
-					      dev);
+		case LIBINPUT_EVENT_TABLET_MOTION_ABSOLUTE:
+			handle_tablet_motion(libinput_event_get_tablet_event(ev),
+					     dev);
 			break;
-		case LIBINPUT_EVENT_POINTER_TOOL_UPDATE:
-			handle_tool_update(libinput_event_get_pointer_event(ev),
+		case LIBINPUT_EVENT_TABLET_TOOL_UPDATE:
+			handle_tool_update(libinput_event_get_tablet_event(ev),
 					   dev);
 			break;
-		case LIBINPUT_EVENT_POINTER_AXIS:
-			handle_axis_update(libinput_event_get_pointer_event(ev),
+		case LIBINPUT_EVENT_TABLET_AXIS:
+			handle_axis_update(libinput_event_get_tablet_event(ev),
 					   dev);
 			break;
-		case LIBINPUT_EVENT_POINTER_BUTTON:
-			handle_button_update(libinput_event_get_pointer_event(ev),
+		case LIBINPUT_EVENT_TABLET_BUTTON:
+			handle_button_update(libinput_event_get_tablet_event(ev),
 					     dev);
 			break;
 		default:
