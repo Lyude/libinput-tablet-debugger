@@ -307,42 +307,44 @@ static void
 handle_axis_update(struct libinput_event_tablet *ev,
 		   struct libinput_device *dev) {
 	struct tablet_panel * panel;
-	enum libinput_tablet_axis axis;
-	li_fixed_t value;
 
 	panel = libinput_device_get_user_data(dev);
-	axis = libinput_event_tablet_get_axis(ev);
-	value = libinput_event_tablet_get_axis_value(ev, axis);
 
-	switch (axis) {
-	case LIBINPUT_TABLET_AXIS_TILT_VERTICAL:
-		panel->tilt_vertical = li_fixed_to_double(value);
+	int a;
+	for (a = 0; a <= LIBINPUT_TABLET_AXIS_MAX; a++) {
+		int row;
+		const char * field;
+		double value;
 
-		update_line(panel, TABLET_TILT_VERTICAL_ROW, 
-			    TABLET_TILT_VERTICAL_FIELD,
-			    panel->tilt_vertical);
-		break;
-	case LIBINPUT_TABLET_AXIS_TILT_HORIZONTAL:
-		panel->tilt_horizontal = li_fixed_to_double(value);
+		if (!libinput_event_tablet_axis_updated(ev, a))
+			continue;
 
-		update_line(panel, TABLET_TILT_HORIZONTAL_ROW,
-			    TABLET_TILT_HORIZONTAL_FIELD,
-			    panel->tilt_horizontal);
-		break;
-	case LIBINPUT_TABLET_AXIS_DISTANCE:
-		panel->distance = li_fixed_to_double(value);
+		value = li_fixed_to_double(
+		    libinput_event_tablet_get_axis_value(ev, a));
 
-		update_line(panel, TABLET_DISTANCE_ROW, TABLET_DISTANCE_FIELD,
-			    panel->distance);
-		break;
-	case LIBINPUT_TABLET_AXIS_PRESSURE:
-		panel->pressure = li_fixed_to_double(value);
-
-		update_line(panel, TABLET_PRESSURE_ROW, TABLET_PRESSURE_FIELD,
-			    panel->pressure);
-		break;
-	default:
-		break;
+		switch (a) {
+		case LIBINPUT_TABLET_AXIS_TILT_VERTICAL:
+			row = TABLET_TILT_VERTICAL_ROW;
+			field = TABLET_TILT_VERTICAL_FIELD;
+			panel->tilt_vertical = value;
+			break;
+		case LIBINPUT_TABLET_AXIS_TILT_HORIZONTAL:
+			row = TABLET_TILT_HORIZONTAL_ROW;
+			field = TABLET_TILT_HORIZONTAL_FIELD;
+			panel->tilt_horizontal = value;
+			break;
+		case LIBINPUT_TABLET_AXIS_DISTANCE:
+			row = TABLET_DISTANCE_ROW;
+			field = TABLET_DISTANCE_FIELD;
+			panel->distance = value;
+			break;
+		case LIBINPUT_TABLET_AXIS_PRESSURE:
+			row = TABLET_PRESSURE_ROW;
+			field = TABLET_PRESSURE_FIELD;
+			panel->pressure = value;
+			break;
+		}
+		update_line(panel, row, field, value);
 	}
 }
 
@@ -411,7 +413,7 @@ handle_tablet_events() {
 			handle_tool_update(libinput_event_get_tablet_event(ev),
 					   dev);
 			break;
-		case LIBINPUT_EVENT_TABLET_AXIS:
+		case LIBINPUT_EVENT_TABLET_AXIS_UPDATE:
 			handle_axis_update(libinput_event_get_tablet_event(ev),
 					   dev);
 			break;
