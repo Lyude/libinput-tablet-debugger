@@ -154,6 +154,8 @@ paint_placeholder_panel() {
 
 static void
 paint_panel(struct tablet_panel * panel) {
+	wclear(panel->window);
+
 	mvwprintw(panel->window, TABLET_SYSTEM_NAME_ROW, 0,
 		  TABLET_SYSTEM_NAME_FIELD, libinput_device_get_sysname(panel->dev));
 	mvwprintw(panel->window, TABLET_STYLUS_TOUCHING_ROW, 0,
