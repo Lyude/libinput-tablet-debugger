@@ -72,7 +72,8 @@ struct tablet_panel {
 	enum libinput_button_state stylus_button_2;
 };
 
-static struct tablet_panel placeholder_panel;
+WINDOW * placeholder_window;
+PANEL * placeholder_panel;
 
 static int
 open_restricted(const char *path, int flags, void *user_data)
@@ -143,6 +144,15 @@ update_line(struct tablet_panel * panel,
 }
 
 static void
+paint_placeholder_panel() {
+	wclear(placeholder_window);
+	wprintw(placeholder_window,
+		"There are no currently detected tablets.\n"
+		"Make sure your tablet is plugged in, and that you have the "
+		"right permissions.");
+}
+
+static void
 paint_panel(struct tablet_panel * panel) {
 	mvwprintw(panel->window, TABLET_SYSTEM_NAME_ROW, 0,
 		  TABLET_SYSTEM_NAME_FIELD, libinput_device_get_sysname(panel->dev));
@@ -200,7 +210,7 @@ handle_new_device(struct libinput_event *ev,
 
 	/* If this is our only tablet, get rid of the placeholder panel */
 	if (++tablet_count == 1) {
-		hide_panel(placeholder_panel.panel);
+		hide_panel(placeholder_panel);
 		update_display();
 	}
 
@@ -218,7 +228,7 @@ handle_removed_device(struct libinput_event *ev,
 	free(panel);
 
 	if (--tablet_count == 0) {
-		show_panel(placeholder_panel.panel);
+		show_panel(placeholder_panel);
 		update_display();
 	}
 
@@ -441,13 +451,9 @@ mainloop() {
 	}
 
 	/* Create the placeholder panel */
-	placeholder_panel.window = newwin(0, 0, 0, 0);
-	placeholder_panel.panel = new_panel(placeholder_panel.window);
-	wprintw(placeholder_panel.window,
-		"There are no currently detected tablets.\n"
-		"Make sure your tablet is plugged in, and that you have the "
-		"right permissions.");
-	show_panel(placeholder_panel.panel);
+	placeholder_window = newwin(0, 0, 0, 0);
+	placeholder_panel = new_panel(placeholder_window);
+	paint_placeholder_panel();
 	update_display();
 
 	/* Handle already-pending device added events */
@@ -468,16 +474,21 @@ mainloop() {
 			endwin();
 			refresh();
 
-			/* Resize all of the panels and their windows */
-			for (PANEL * p = panel_above(NULL);
-			     p != NULL;
-			     p = panel_below(p))
-			{
-				struct tablet_panel * panel =
-					(void*)panel_userptr(p);
+			/* Resize all of the panels and their windows (if we
+			 * have any) */
+			if (panel_above(NULL) != placeholder_panel) {
+				for (PANEL * p = panel_above(NULL);
+				     p != NULL;
+				     p = panel_below(p))
+				{
+					struct tablet_panel * panel =
+						(void*)panel_userptr(p);
 
-				paint_panel(panel);
+					paint_panel(panel);
+				}
 			}
+			paint_placeholder_panel();
+
 			update_display();
 		}
 		else if (fds[2].revents) {
