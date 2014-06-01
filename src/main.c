@@ -193,6 +193,7 @@ new_tablet_panel(struct libinput_device * dev) {
 	panel->window = newwin(0, 0, 0, 0);
 	panel->panel = new_panel(panel->window);
 	panel->dev = dev;
+	panel->tool_str = "None";
 
 	set_panel_userptr(panel->panel, panel);
 
