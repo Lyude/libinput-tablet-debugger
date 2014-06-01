@@ -60,7 +60,9 @@ struct tablet_panel {
 
 	double x;
 	double y;
+
 	char * tool_str;
+	uint32_t tool_serial;
 
 	double tilt_vertical;
 	double tilt_horizontal;
@@ -164,6 +166,8 @@ paint_panel(struct tablet_panel * panel) {
 
 	mvwprintw(panel->window, TABLET_TOOL_NAME_ROW, 0,
 		  TABLET_TOOL_NAME_FIELD, panel->tool_str);
+	mvwprintw(panel->window, TABLET_TOOL_SERIAL_ROW, 0,
+		  TABLET_TOOL_SERIAL_FIELD, panel->tool_serial);
 
 	mvwprintw(panel->window, TABLET_X_AND_Y_ROW, 0,
 		  TABLET_X_AND_Y_FIELD, panel->x, panel->y);
@@ -257,11 +261,14 @@ static void
 handle_tool_update(struct libinput_event_tablet *ev,
 		   struct libinput_device *dev) {
 	struct tablet_panel * panel;
+	struct libinput_tool * tool;
 	char * tool_str;
+	uint32_t serial;
 
 	panel = libinput_device_get_user_data(dev);
+	tool = libinput_event_tablet_get_tool(ev);
 
-	switch (libinput_tool_get_type(libinput_event_tablet_get_tool(ev))) {
+	switch (libinput_tool_get_type(tool)) {
 	case LIBINPUT_TOOL_NONE:
 		tool_str = "None";
 		break;
@@ -293,11 +300,15 @@ handle_tool_update(struct libinput_event_tablet *ev,
 		tool_str = "???";
 		break;
 	}
+	serial = libinput_tool_get_serial(tool);
 
 	update_line(panel, TABLET_TOOL_NAME_ROW, TABLET_TOOL_NAME_FIELD,
 		    tool_str);
+	update_line(panel, TABLET_TOOL_SERIAL_ROW, TABLET_TOOL_SERIAL_FIELD,
+		    serial);
 
 	panel->tool_str = tool_str;
+	panel->tool_serial = serial;
 }
 
 static void

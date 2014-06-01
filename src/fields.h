@@ -22,22 +22,24 @@
 #define TABLET_STYLUS_TOUCHING_ROW 1
 
 #define TABLET_TOOL_NAME_ROW       3
+#define TABLET_TOOL_SERIAL_ROW     4
 
-#define TABLET_X_AND_Y_ROW         5
+#define TABLET_X_AND_Y_ROW         6
 
-#define TABLET_TILT_VERTICAL_ROW   7
-#define TABLET_TILT_HORIZONTAL_ROW 8
+#define TABLET_TILT_VERTICAL_ROW   8
+#define TABLET_TILT_HORIZONTAL_ROW 9
 
-#define TABLET_DISTANCE_ROW        10
-#define TABLET_PRESSURE_ROW        11
+#define TABLET_DISTANCE_ROW        11
+#define TABLET_PRESSURE_ROW        12
 
-#define TABLET_STYLUS_BUTTONS_ROW  13
+#define TABLET_STYLUS_BUTTONS_ROW  14
 
 /* The text in each field */
 #define TABLET_SYSTEM_NAME_FIELD     "System name: %s"
 #define TABLET_STYLUS_TOUCHING_FIELD "Stylus is touching tablet? %s"
 
 #define TABLET_TOOL_NAME_FIELD       "Current tool: %s"
+#define TABLET_TOOL_SERIAL_FIELD     "Tool serial number: %d"
 
 #define TABLET_X_AND_Y_FIELD         "X: %7.3f Y: %7.3f"
 
