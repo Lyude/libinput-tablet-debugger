@@ -549,7 +549,6 @@ main()
 	/* setup ncurses */
 	setenv("ESCDELAY", "25", 0);
 	initscr();
-	raw();
 	keypad(stdscr, true);
 	noecho();
 	clear();
