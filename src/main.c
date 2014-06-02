@@ -508,6 +508,7 @@ mainloop() {
 		else if (fds[2].revents) {
 			switch(getch()) {
 			case 'q':
+			case 27: /* Escape */
 				goto exit_mainloop;
 			case KEY_LEFT:
 				top_panel(panel_below(NULL));
@@ -546,6 +547,7 @@ main()
 	}
 
 	/* setup ncurses */
+	setenv("ESCDELAY", "25", 0);
 	initscr();
 	raw();
 	keypad(stdscr, true);
